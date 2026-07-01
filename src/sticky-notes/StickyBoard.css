@@ -1,0 +1,88 @@
+.sticky-board {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 1024px;
+  min-height: 768px;
+  background: #f4f1ea;
+  background-image: radial-gradient(circle, #e4dfd2 1px, transparent 1px);
+  background-size: 24px 24px;
+  overflow: hidden;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.sticky-board__instructions {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  margin: 0;
+  padding: 8px 14px;
+  max-width: 520px;
+  font: 13px/1.4 system-ui, sans-serif;
+  color: #4a4638;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 6px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.sticky-note {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate3d(var(--note-x), var(--note-y), 0);
+  background: #fff6b8;
+  border: 1px solid #d9c96a;
+  border-radius: 4px;
+  box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.18);
+  cursor: grab;
+}
+
+.sticky-note:active {
+  cursor: grabbing;
+}
+
+.sticky-note--active {
+  box-shadow: 3px 5px 10px rgba(0, 0, 0, 0.28);
+  z-index: 2;
+}
+
+.sticky-note--preview {
+  background: rgba(255, 246, 184, 0.45);
+  border: 1px dashed #9a8c3f;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.sticky-note__resize-handle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+  border-right: 2px solid #8a7c2f;
+  border-bottom: 2px solid #8a7c2f;
+}
+
+.trash-zone {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  width: 96px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 2px dashed #b3a98f;
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.trash-zone--active {
+  background: rgba(220, 80, 70, 0.18);
+  border-color: #c94b3e;
+}
