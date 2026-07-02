@@ -1,24 +1,30 @@
-import { DEFAULT_NOTE_COLOR, MIN_CREATION_THRESHOLD, MIN_NOTE_SIZE } from './constants';
+import {
+  DEFAULT_NOTE_COLOR,
+  MIN_CREATION_THRESHOLD,
+  MIN_DELETE_DRAG_DISTANCE,
+  MIN_NOTE_SIZE,
+} from './constants';
 import {
   clampPoint,
+  fitRectToBoard,
   isNoteOverTrash,
   moveRect,
   normalizeRect,
   resizeRect,
 } from './geometry';
-import type { BoardAction, BoardState, Rect } from './types';
+import type { BoardAction, BoardState, Point, Rect } from './types';
 
 function assertNever(value: never): never {
   throw new Error(`Unexpected action: ${JSON.stringify(value)}`);
 }
 
-function clampRectToBoard(rect: Rect, boardSize: { width: number; height: number }): Rect {
-  return {
-    x: Math.min(Math.max(rect.x, 0), Math.max(boardSize.width - rect.width, 0)),
-    y: Math.min(Math.max(rect.y, 0), Math.max(boardSize.height - rect.height, 0)),
-    width: rect.width,
-    height: rect.height,
-  };
+function hasDraggedFarEnough(
+  grabbed: { readonly originalRect: Rect; readonly pointerOffset: Point },
+  point: Point,
+): boolean {
+  const grabX = grabbed.originalRect.x + grabbed.pointerOffset.x;
+  const grabY = grabbed.originalRect.y + grabbed.pointerOffset.y;
+  return Math.hypot(point.x - grabX, point.y - grabY) >= MIN_DELETE_DRAG_DISTANCE;
 }
 
 function bringNoteToFront<T extends { id: string }>(notes: readonly T[], noteId: string): T[] {
@@ -116,7 +122,8 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
             interaction.originalRect,
             action.boardSize,
           );
-          const deleteCandidate = isNoteOverTrash(preview, action.trashRect);
+          const deleteCandidate =
+            hasDraggedFarEnough(interaction, point) && isNoteOverTrash(preview, action.trashRect);
           return { ...state, interaction: { ...interaction, preview, deleteCandidate } };
         }
 
@@ -154,7 +161,7 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
             return { ...state, interaction: null };
           }
 
-          const finalRect = clampRectToBoard(
+          const finalRect = fitRectToBoard(
             {
               x: draft.x,
               y: draft.y,
@@ -181,7 +188,10 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
             action.boardSize,
           );
 
-          if (isNoteOverTrash(finalRect, action.trashRect)) {
+          if (
+            hasDraggedFarEnough(interaction, point) &&
+            isNoteOverTrash(finalRect, action.trashRect)
+          ) {
             return {
               notes: state.notes.filter((note) => note.id !== interaction.noteId),
               interaction: null,

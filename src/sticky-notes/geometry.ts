@@ -57,6 +57,18 @@ export function resizeRect(
   };
 }
 
+export function fitRectToBoard(rect: Rect, boardSize: Size): Rect {
+  const width = Math.min(rect.width, boardSize.width);
+  const height = Math.min(rect.height, boardSize.height);
+
+  return {
+    x: Math.min(Math.max(rect.x, 0), boardSize.width - width),
+    y: Math.min(Math.max(rect.y, 0), boardSize.height - height),
+    width,
+    height,
+  };
+}
+
 export function containsPoint(rect: Rect, point: Point): boolean {
   return (
     point.x >= rect.x &&

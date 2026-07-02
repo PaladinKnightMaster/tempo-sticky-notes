@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef } from 'react';
 import { boardReducer } from './boardReducer';
 import { TRASH_ZONE_MARGIN, TRASH_ZONE_SIZE } from './constants';
+import { fitRectToBoard } from './geometry';
 import { loadNotes, saveNotes } from './persistence';
 import { StickyNote } from './StickyNote';
 import { TrashZone } from './TrashZone';
@@ -16,7 +17,18 @@ import type {
 import './StickyBoard.css';
 
 function createInitialState(): BoardState {
-  return { notes: loadNotes(), interaction: null };
+  // Notes saved on a larger screen could otherwise restore fully outside the
+  // visible board and become unreachable. The board fills the viewport with a
+  // 1024x768 minimum, so that size is known before the first render.
+  const boardSize: Size = {
+    width: Math.max(window.innerWidth, 1024),
+    height: Math.max(window.innerHeight, 768),
+  };
+
+  return {
+    notes: loadNotes().map((note) => ({ ...note, rect: fitRectToBoard(note.rect, boardSize) })),
+    interaction: null,
+  };
 }
 
 function createNoteId(): NoteId {
@@ -95,6 +107,7 @@ export function StickyBoard() {
   }
 
   function handlePointerUp(event: React.PointerEvent<HTMLDivElement>) {
+    if (activePointerIdRef.current !== event.pointerId) return;
     cancelScheduledFrame();
     latestPointerRef.current = null;
     activePointerIdRef.current = null;
@@ -109,15 +122,22 @@ export function StickyBoard() {
     });
   }
 
-  function handlePointerCancel() {
+  function handlePointerCancel(event: React.PointerEvent<HTMLDivElement>) {
+    if (activePointerIdRef.current !== event.pointerId) return;
     cancelScheduledFrame();
     latestPointerRef.current = null;
     activePointerIdRef.current = null;
     dispatch({ type: 'interactionCancelled' });
   }
 
+  // A drag may only start with the primary button, and never while another
+  // pointer is already driving an interaction.
+  function canStartInteraction(event: React.PointerEvent<HTMLDivElement>): boolean {
+    return event.button === 0 && activePointerIdRef.current === null;
+  }
+
   function handleBoardPointerDown(event: React.PointerEvent<HTMLDivElement>) {
-    if (event.target !== event.currentTarget) return;
+    if (event.target !== event.currentTarget || !canStartInteraction(event)) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     activePointerIdRef.current = event.pointerId;
     dispatch({
@@ -129,6 +149,7 @@ export function StickyBoard() {
   }
 
   const handleNoteMoveStart = useCallback((noteId: NoteId, event: React.PointerEvent<HTMLDivElement>) => {
+    if (!canStartInteraction(event)) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     activePointerIdRef.current = event.pointerId;
     dispatch({
@@ -140,6 +161,7 @@ export function StickyBoard() {
   }, []);
 
   const handleResizeStart = useCallback((noteId: NoteId, event: React.PointerEvent<HTMLDivElement>) => {
+    if (!canStartInteraction(event)) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     activePointerIdRef.current = event.pointerId;
     dispatch({
@@ -154,8 +176,10 @@ export function StickyBoard() {
     dispatch({ type: 'colorChanged', noteId, color });
   }, []);
 
+  const hasActiveInteraction = state.interaction !== null;
+
   useEffect(() => {
-    if (!state.interaction) return;
+    if (!hasActiveInteraction) return;
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
@@ -168,7 +192,7 @@ export function StickyBoard() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [state.interaction]);
+  }, [hasActiveInteraction]);
 
   useEffect(() => {
     saveNotes(state.notes);

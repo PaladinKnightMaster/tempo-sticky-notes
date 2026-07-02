@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   clampPoint,
   containsPoint,
+  fitRectToBoard,
   isNoteOverTrash,
   moveRect,
   normalizeRect,
@@ -158,5 +159,29 @@ describe('isNoteOverTrash', () => {
     // clamped to the board, but its corner genuinely covers the trash area.
     const note = { x: 820, y: 620, width: 100, height: 100 };
     expect(isNoteOverTrash(note, trash)).toBe(true);
+  });
+});
+
+describe('fitRectToBoard', () => {
+  const boardSize = { width: 1024, height: 768 };
+
+  it('leaves a rect already inside the board unchanged', () => {
+    const rect = { x: 100, y: 100, width: 200, height: 150 };
+    expect(fitRectToBoard(rect, boardSize)).toEqual(rect);
+  });
+
+  it('pulls a rect that lies fully beyond the board back inside', () => {
+    const rect = { x: 2000, y: 1500, width: 200, height: 150 };
+    expect(fitRectToBoard(rect, boardSize)).toEqual({ x: 824, y: 618, width: 200, height: 150 });
+  });
+
+  it('pulls a rect with negative coordinates back inside', () => {
+    const rect = { x: -300, y: -100, width: 200, height: 150 };
+    expect(fitRectToBoard(rect, boardSize)).toEqual({ x: 0, y: 0, width: 200, height: 150 });
+  });
+
+  it('shrinks a rect larger than the board to fit it', () => {
+    const rect = { x: 50, y: 50, width: 3000, height: 2000 };
+    expect(fitRectToBoard(rect, boardSize)).toEqual({ x: 0, y: 0, width: 1024, height: 768 });
   });
 });

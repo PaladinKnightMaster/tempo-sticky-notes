@@ -163,6 +163,99 @@ describe('boardReducer - movement', () => {
   });
 });
 
+describe('boardReducer - trash safety', () => {
+  // A note already resting over the trash zone (created or resized into that corner).
+  function stateWithNoteOnTrash(): BoardState {
+    return {
+      notes: [{ id: 'note-1', rect: { x: 850, y: 600, width: 120, height: 80 }, color: 'yellow' }],
+      interaction: null,
+    };
+  }
+
+  it('does not delete a note resting over the trash zone on a plain click', () => {
+    const started = boardReducer(stateWithNoteOnTrash(), {
+      type: 'movementStarted',
+      pointerId: 1,
+      noteId: 'note-1',
+      point: { x: 910, y: 660 },
+    });
+
+    const released = boardReducer(started, {
+      type: 'pointerReleased',
+      pointerId: 1,
+      point: { x: 910, y: 660 },
+      boardSize,
+      trashRect,
+    });
+
+    expect(released.interaction).toBeNull();
+    expect(released.notes).toHaveLength(1);
+  });
+
+  it('does not flag a delete candidate for a sub-threshold jitter over the trash zone', () => {
+    const started = boardReducer(stateWithNoteOnTrash(), {
+      type: 'movementStarted',
+      pointerId: 1,
+      noteId: 'note-1',
+      point: { x: 910, y: 660 },
+    });
+
+    const jittered = boardReducer(started, {
+      type: 'pointerFrameReceived',
+      pointerId: 1,
+      point: { x: 912, y: 661 },
+      boardSize,
+      trashRect,
+    });
+
+    expect(jittered.interaction).toMatchObject({ kind: 'moving', deleteCandidate: false });
+  });
+
+  it('still deletes after a real drag that ends over the trash zone', () => {
+    const started = boardReducer(stateWithNoteOnTrash(), {
+      type: 'movementStarted',
+      pointerId: 1,
+      noteId: 'note-1',
+      point: { x: 910, y: 660 },
+    });
+
+    const released = boardReducer(started, {
+      type: 'pointerReleased',
+      pointerId: 1,
+      point: { x: 950, y: 700 },
+      boardSize,
+      trashRect,
+    });
+
+    expect(released.notes).toEqual([]);
+  });
+
+  it('does not delete when a resize ends over the trash zone', () => {
+    const state: BoardState = {
+      notes: [{ id: 'note-1', rect: { x: 700, y: 500, width: 150, height: 100 }, color: 'yellow' }],
+      interaction: null,
+    };
+
+    const started = boardReducer(state, {
+      type: 'resizeStarted',
+      pointerId: 1,
+      noteId: 'note-1',
+      point: { x: 850, y: 600 },
+    });
+
+    const released = boardReducer(started, {
+      type: 'pointerReleased',
+      pointerId: 1,
+      point: { x: 1000, y: 760 },
+      boardSize,
+      trashRect,
+    });
+
+    expect(released.notes).toHaveLength(1);
+    expect(released.notes[0]?.rect.width).toBeGreaterThan(150);
+  });
+});
+
 describe('boardReducer - move to front', () => {
   function stateWithTwoNotes(): BoardState {
     return {
