@@ -148,8 +148,15 @@ describe('isNoteOverTrash', () => {
     expect(isNoteOverTrash(note, trash)).toBe(true);
   });
 
-  it('is false when the note only overlaps the trash zone without its center inside', () => {
+  it('is false when the note does not touch the trash zone at all', () => {
     const note = { x: 850, y: 650, width: 40, height: 40 };
     expect(isNoteOverTrash(note, trash)).toBe(false);
+  });
+
+  it('is true when a large note overlaps the trash zone even if its center is outside', () => {
+    // A note big enough that its center can never reach the trash zone once
+    // clamped to the board, but its corner genuinely covers the trash area.
+    const note = { x: 820, y: 620, width: 100, height: 100 };
+    expect(isNoteOverTrash(note, trash)).toBe(true);
   });
 });

@@ -67,10 +67,10 @@ export function containsPoint(rect: Rect, point: Point): boolean {
 }
 
 export function isNoteOverTrash(noteRect: Rect, trashRect: Rect): boolean {
-  const center: Point = {
-    x: noteRect.x + noteRect.width / 2,
-    y: noteRect.y + noteRect.height / 2,
-  };
-
-  return containsPoint(trashRect, center);
+  return (
+    noteRect.x < trashRect.x + trashRect.width &&
+    noteRect.x + noteRect.width > trashRect.x &&
+    noteRect.y < trashRect.y + trashRect.height &&
+    noteRect.y + noteRect.height > trashRect.y
+  );
 }

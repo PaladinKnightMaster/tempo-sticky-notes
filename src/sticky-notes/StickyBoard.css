@@ -48,6 +48,11 @@
   z-index: 2;
 }
 
+.sticky-note--delete-candidate {
+  border: 2px solid #c94b3e;
+  box-shadow: 0 0 0 4px rgba(201, 75, 62, 0.25), 3px 5px 10px rgba(0, 0, 0, 0.28);
+}
+
 .sticky-note--preview {
   background: rgba(255, 246, 184, 0.45);
   border: 1px dashed #9a8c3f;

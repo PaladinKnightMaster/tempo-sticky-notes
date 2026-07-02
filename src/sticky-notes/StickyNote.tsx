@@ -5,14 +5,30 @@ interface StickyNoteProps {
   readonly id: NoteId;
   readonly rect: Rect;
   readonly isActive: boolean;
+  readonly isDeleteCandidate: boolean;
   readonly onMoveStart: (id: NoteId, event: React.PointerEvent<HTMLDivElement>) => void;
   readonly onResizeStart: (id: NoteId, event: React.PointerEvent<HTMLDivElement>) => void;
 }
 
-function StickyNoteComponent({ id, rect, isActive, onMoveStart, onResizeStart }: StickyNoteProps) {
+function StickyNoteComponent({
+  id,
+  rect,
+  isActive,
+  isDeleteCandidate,
+  onMoveStart,
+  onResizeStart,
+}: StickyNoteProps) {
+  const className = [
+    'sticky-note',
+    isActive && 'sticky-note--active',
+    isDeleteCandidate && 'sticky-note--delete-candidate',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <div
-      className={`sticky-note${isActive ? ' sticky-note--active' : ''}`}
+      className={className}
       style={
         {
           '--note-x': `${rect.x}px`,

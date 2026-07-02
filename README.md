@@ -35,7 +35,8 @@ Open the printed local URL in Chrome, Firefox, or Edge. The app targets a minimu
 - **Create**: drag on empty board space; release to commit the note.
 - **Move**: drag a note's body.
 - **Resize**: drag the small handle in a note's bottom-right corner.
-- **Delete**: drag a note so it's centered over the trash zone (bottom-right) and release.
+- **Delete**: drag a note so it overlaps the trash zone (bottom-right) — it flashes red to
+  confirm — and release.
 - **Cancel**: press `Escape` at any point during a drag to discard it.
 
 ## Architecture
@@ -50,8 +51,9 @@ drive the interaction: the element that begins a drag captures the pointer, so s
 board.
 
 Geometry — rectangle normalization for any drag direction, movement/resize clamping to the
-board, minimum-size enforcement, and trash-zone hit testing (by note center, to avoid deleting
-on incidental overlap) — is implemented as small, pure, framework-independent functions,
+board, minimum-size enforcement, and trash-zone hit testing (rectangle intersection, so a note
+of any size can always be dropped on the trash zone once it's clamped against the board's
+corner) — is implemented as small, pure, framework-independent functions,
 tested directly with Vitest. Browser mechanics that don't need to trigger a render (the board's
 DOM node, the latest raw pointer sample, the id of a scheduled animation frame, and the id of
 the pointer currently driving an interaction) live in refs rather than reducer state, keeping

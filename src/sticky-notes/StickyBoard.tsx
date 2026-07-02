@@ -12,12 +12,16 @@ function createNoteId(): NoteId {
   return crypto.randomUUID();
 }
 
-function renderedRect(note: NoteRecord, state: BoardState): { rect: Rect; isActive: boolean } {
+function renderedRect(
+  note: NoteRecord,
+  state: BoardState,
+): { rect: Rect; isActive: boolean; isDeleteCandidate: boolean } {
   const { interaction } = state;
   if (interaction && interaction.kind !== 'creating' && interaction.noteId === note.id) {
-    return { rect: interaction.preview, isActive: true };
+    const isDeleteCandidate = interaction.kind === 'moving' && interaction.deleteCandidate;
+    return { rect: interaction.preview, isActive: true, isDeleteCandidate };
   }
-  return { rect: note.rect, isActive: false };
+  return { rect: note.rect, isActive: false, isDeleteCandidate: false };
 }
 
 export function StickyBoard() {
@@ -168,13 +172,14 @@ export function StickyBoard() {
       </p>
 
       {state.notes.map((note) => {
-        const { rect, isActive } = renderedRect(note, state);
+        const { rect, isActive, isDeleteCandidate } = renderedRect(note, state);
         return (
           <StickyNote
             key={note.id}
             id={note.id}
             rect={rect}
             isActive={isActive}
+            isDeleteCandidate={isDeleteCandidate}
             onMoveStart={handleNoteMoveStart}
             onResizeStart={handleResizeStart}
           />
