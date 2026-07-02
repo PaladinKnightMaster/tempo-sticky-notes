@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useReducer, useRef } from 'react';
 import { boardReducer } from './boardReducer';
 import { TRASH_ZONE_MARGIN, TRASH_ZONE_SIZE } from './constants';
+import { loadNotes, saveNotes } from './persistence';
 import { StickyNote } from './StickyNote';
 import { TrashZone } from './TrashZone';
 import type { BoardState, NoteId, Point, Rect, Size, StickyNote as NoteRecord } from './types';
 import './StickyBoard.css';
 
-const initialState: BoardState = { notes: [], interaction: null };
+function createInitialState(): BoardState {
+  return { notes: loadNotes(), interaction: null };
+}
 
 function createNoteId(): NoteId {
   return crypto.randomUUID();
@@ -25,7 +28,7 @@ function renderedRect(
 }
 
 export function StickyBoard() {
-  const [state, dispatch] = useReducer(boardReducer, initialState);
+  const [state, dispatch] = useReducer(boardReducer, undefined, createInitialState);
   const boardRef = useRef<HTMLDivElement>(null);
   const latestPointerRef = useRef<Point | null>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -154,6 +157,10 @@ export function StickyBoard() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [state.interaction]);
+
+  useEffect(() => {
+    saveNotes(state.notes);
+  }, [state.notes]);
 
   const trashActive = state.interaction?.kind === 'moving' && state.interaction.deleteCandidate;
 

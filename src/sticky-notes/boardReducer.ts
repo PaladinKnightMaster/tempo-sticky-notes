@@ -21,6 +21,14 @@ function clampRectToBoard(rect: Rect, boardSize: { width: number; height: number
   };
 }
 
+function bringNoteToFront<T extends { id: string }>(notes: readonly T[], noteId: string): T[] {
+  const note = notes.find((candidate) => candidate.id === noteId);
+  if (!note) {
+    return notes as T[];
+  }
+  return [...notes.filter((candidate) => candidate.id !== noteId), note];
+}
+
 export function boardReducer(state: BoardState, action: BoardAction): BoardState {
   if (
     state.interaction &&
@@ -52,7 +60,7 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
       }
 
       return {
-        ...state,
+        notes: bringNoteToFront(state.notes, action.noteId),
         interaction: {
           kind: 'moving',
           pointerId: action.pointerId,
@@ -75,7 +83,7 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
       }
 
       return {
-        ...state,
+        notes: bringNoteToFront(state.notes, action.noteId),
         interaction: {
           kind: 'resizing',
           pointerId: action.pointerId,

@@ -163,6 +163,51 @@ describe('boardReducer - movement', () => {
   });
 });
 
+describe('boardReducer - move to front', () => {
+  function stateWithTwoNotes(): BoardState {
+    return {
+      notes: [
+        { id: 'note-1', rect: { x: 100, y: 100, width: 120, height: 80 } },
+        { id: 'note-2', rect: { x: 150, y: 120, width: 120, height: 80 } },
+      ],
+      interaction: null,
+    };
+  }
+
+  it('moves a note to the end of the list (rendered on top) when a drag starts', () => {
+    const state = boardReducer(stateWithTwoNotes(), {
+      type: 'movementStarted',
+      pointerId: 1,
+      noteId: 'note-1',
+      point: { x: 110, y: 110 },
+    });
+
+    expect(state.notes.map((note) => note.id)).toEqual(['note-2', 'note-1']);
+  });
+
+  it('moves a note to the end of the list when a resize starts', () => {
+    const state = boardReducer(stateWithTwoNotes(), {
+      type: 'resizeStarted',
+      pointerId: 1,
+      noteId: 'note-1',
+      point: { x: 220, y: 180 },
+    });
+
+    expect(state.notes.map((note) => note.id)).toEqual(['note-2', 'note-1']);
+  });
+
+  it('leaves the order unchanged if the note is already last', () => {
+    const state = boardReducer(stateWithTwoNotes(), {
+      type: 'movementStarted',
+      pointerId: 1,
+      noteId: 'note-2',
+      point: { x: 160, y: 130 },
+    });
+
+    expect(state.notes.map((note) => note.id)).toEqual(['note-1', 'note-2']);
+  });
+});
+
 describe('boardReducer - resize', () => {
   function stateWithNote(): BoardState {
     return {
