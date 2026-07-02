@@ -1,5 +1,7 @@
 export type NoteId = string;
 
+export type NoteColor = 'yellow' | 'pink' | 'blue' | 'green' | 'purple';
+
 export interface Point {
   readonly x: number;
   readonly y: number;
@@ -15,6 +17,7 @@ export interface Rect extends Point, Size {}
 export interface StickyNote {
   readonly id: NoteId;
   readonly rect: Rect;
+  readonly color: NoteColor;
 }
 
 export type Interaction =
@@ -83,4 +86,9 @@ export type BoardAction =
     }
   | {
       readonly type: 'interactionCancelled';
+    }
+  | {
+      readonly type: 'colorChanged';
+      readonly noteId: NoteId;
+      readonly color: NoteColor;
     };

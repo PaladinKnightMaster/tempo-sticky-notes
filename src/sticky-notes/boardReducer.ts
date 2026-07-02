@@ -1,4 +1,4 @@
-import { MIN_CREATION_THRESHOLD, MIN_NOTE_SIZE } from './constants';
+import { DEFAULT_NOTE_COLOR, MIN_CREATION_THRESHOLD, MIN_NOTE_SIZE } from './constants';
 import {
   clampPoint,
   isNoteOverTrash,
@@ -165,7 +165,10 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
           );
 
           return {
-            notes: [...state.notes, { id: interaction.draftId, rect: finalRect }],
+            notes: [
+              ...state.notes,
+              { id: interaction.draftId, rect: finalRect, color: DEFAULT_NOTE_COLOR },
+            ],
             interaction: null,
           };
         }
@@ -217,6 +220,20 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
 
     case 'interactionCancelled': {
       return { ...state, interaction: null };
+    }
+
+    case 'colorChanged': {
+      const note = state.notes.find((candidate) => candidate.id === action.noteId);
+      if (!note) {
+        return state;
+      }
+
+      return {
+        ...state,
+        notes: state.notes.map((candidate) =>
+          candidate.id === action.noteId ? { ...candidate, color: action.color } : candidate,
+        ),
+      };
     }
 
     default:

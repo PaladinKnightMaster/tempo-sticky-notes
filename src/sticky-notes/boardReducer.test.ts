@@ -68,7 +68,7 @@ describe('boardReducer - creation', () => {
 
     expect(released.interaction).toBeNull();
     expect(released.notes).toEqual([
-      { id: 'note-1', rect: { x: 50, y: 60, width: 200, height: 200 } },
+      { id: 'note-1', rect: { x: 50, y: 60, width: 200, height: 200 }, color: 'yellow' },
     ]);
   });
 
@@ -96,7 +96,7 @@ describe('boardReducer - creation', () => {
 describe('boardReducer - movement', () => {
   function stateWithNote(): BoardState {
     return {
-      notes: [{ id: 'note-1', rect: { x: 100, y: 100, width: 120, height: 80 } }],
+      notes: [{ id: 'note-1', rect: { x: 100, y: 100, width: 120, height: 80 }, color: 'yellow' }],
       interaction: null,
     };
   }
@@ -138,7 +138,7 @@ describe('boardReducer - movement', () => {
 
     expect(released.interaction).toBeNull();
     expect(released.notes).toEqual([
-      { id: 'note-1', rect: { x: 200, y: 200, width: 120, height: 80 } },
+      { id: 'note-1', rect: { x: 200, y: 200, width: 120, height: 80 }, color: 'yellow' },
     ]);
   });
 
@@ -167,8 +167,8 @@ describe('boardReducer - move to front', () => {
   function stateWithTwoNotes(): BoardState {
     return {
       notes: [
-        { id: 'note-1', rect: { x: 100, y: 100, width: 120, height: 80 } },
-        { id: 'note-2', rect: { x: 150, y: 120, width: 120, height: 80 } },
+        { id: 'note-1', rect: { x: 100, y: 100, width: 120, height: 80 }, color: 'yellow' },
+        { id: 'note-2', rect: { x: 150, y: 120, width: 120, height: 80 }, color: 'yellow' },
       ],
       interaction: null,
     };
@@ -211,7 +211,7 @@ describe('boardReducer - move to front', () => {
 describe('boardReducer - resize', () => {
   function stateWithNote(): BoardState {
     return {
-      notes: [{ id: 'note-1', rect: { x: 100, y: 100, width: 200, height: 150 } }],
+      notes: [{ id: 'note-1', rect: { x: 100, y: 100, width: 200, height: 150 }, color: 'yellow' }],
       interaction: null,
     };
   }
@@ -252,7 +252,7 @@ describe('boardReducer - resize', () => {
 
     expect(released.interaction).toBeNull();
     expect(released.notes).toEqual([
-      { id: 'note-1', rect: { x: 100, y: 100, width: 250, height: 200 } },
+      { id: 'note-1', rect: { x: 100, y: 100, width: 250, height: 200 }, color: 'yellow' },
     ]);
   });
 });
@@ -260,7 +260,7 @@ describe('boardReducer - resize', () => {
 describe('boardReducer - cancellation', () => {
   it('restores committed notes and clears the interaction', () => {
     const initial: BoardState = {
-      notes: [{ id: 'note-1', rect: { x: 100, y: 100, width: 120, height: 80 } }],
+      notes: [{ id: 'note-1', rect: { x: 100, y: 100, width: 120, height: 80 }, color: 'yellow' }],
       interaction: null,
     };
 
@@ -312,8 +312,8 @@ describe('boardReducer - mismatched pointer id', () => {
   it('ignores a new interaction started by a different pointer while one is active', () => {
     const state: BoardState = {
       notes: [
-        { id: 'note-1', rect: { x: 100, y: 100, width: 120, height: 80 } },
-        { id: 'note-2', rect: { x: 300, y: 100, width: 120, height: 80 } },
+        { id: 'note-1', rect: { x: 100, y: 100, width: 120, height: 80 }, color: 'yellow' },
+        { id: 'note-2', rect: { x: 300, y: 100, width: 120, height: 80 }, color: 'yellow' },
       ],
       interaction: null,
     };
@@ -333,5 +333,62 @@ describe('boardReducer - mismatched pointer id', () => {
     });
 
     expect(hijackAttempt).toBe(started);
+  });
+});
+
+describe('boardReducer - color', () => {
+  it('assigns the default color to a newly created note', () => {
+    const started = boardReducer(
+      { notes: [], interaction: null },
+      {
+        type: 'creationStarted',
+        pointerId: 1,
+        draftId: 'note-1',
+        point: { x: 50, y: 60 },
+      },
+    );
+
+    const released = boardReducer(started, {
+      type: 'pointerReleased',
+      pointerId: 1,
+      point: { x: 250, y: 260 },
+      boardSize,
+      trashRect,
+    });
+
+    expect(released.notes[0]?.color).toBe('yellow');
+  });
+
+  it('changes only the targeted note color', () => {
+    const state: BoardState = {
+      notes: [
+        { id: 'note-1', rect: { x: 100, y: 100, width: 120, height: 80 }, color: 'yellow' },
+        { id: 'note-2', rect: { x: 300, y: 100, width: 120, height: 80 }, color: 'yellow' },
+      ],
+      interaction: null,
+    };
+
+    const updated = boardReducer(state, {
+      type: 'colorChanged',
+      noteId: 'note-2',
+      color: 'blue',
+    });
+
+    expect(updated.notes.map((note) => note.color)).toEqual(['yellow', 'blue']);
+  });
+
+  it('ignores a color change for an unknown note id', () => {
+    const state: BoardState = {
+      notes: [{ id: 'note-1', rect: { x: 100, y: 100, width: 120, height: 80 }, color: 'yellow' }],
+      interaction: null,
+    };
+
+    const updated = boardReducer(state, {
+      type: 'colorChanged',
+      noteId: 'does-not-exist',
+      color: 'blue',
+    });
+
+    expect(updated).toBe(state);
   });
 });

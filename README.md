@@ -44,6 +44,7 @@ Open the printed local URL in Chrome, Firefox, or Edge. The app targets a minimu
 - **Move to front**: picking up a note (to move or resize it) brings it to the top of the
   stack, so overlapping notes stay reachable.
 - **Persistence**: notes are saved to `localStorage` on every change and restored on page load.
+- **Colors**: click a color dot in a note's top-left corner to pick from 5 colors.
 
 ## Architecture
 

@@ -43,6 +43,31 @@
   cursor: grabbing;
 }
 
+.sticky-note--yellow {
+  background: #fff6b8;
+  border-color: #d9c96a;
+}
+
+.sticky-note--pink {
+  background: #ffd6e8;
+  border-color: #e08fb0;
+}
+
+.sticky-note--blue {
+  background: #cfe8ff;
+  border-color: #7fb3e0;
+}
+
+.sticky-note--green {
+  background: #d7f5d0;
+  border-color: #8fcf82;
+}
+
+.sticky-note--purple {
+  background: #e6d9ff;
+  border-color: #b79ce8;
+}
+
 .sticky-note--active {
   box-shadow: 3px 5px 10px rgba(0, 0, 0, 0.28);
   z-index: 2;
@@ -69,6 +94,47 @@
   cursor: nwse-resize;
   border-right: 2px solid #8a7c2f;
   border-bottom: 2px solid #8a7c2f;
+}
+
+.sticky-note__colors {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  display: flex;
+  gap: 5px;
+}
+
+.sticky-note__color-swatch {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+
+.sticky-note__color-swatch--selected {
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.45);
+}
+
+.sticky-note__color-swatch--yellow {
+  background: #fff6b8;
+}
+
+.sticky-note__color-swatch--pink {
+  background: #ffd6e8;
+}
+
+.sticky-note__color-swatch--blue {
+  background: #cfe8ff;
+}
+
+.sticky-note__color-swatch--green {
+  background: #d7f5d0;
+}
+
+.sticky-note__color-swatch--purple {
+  background: #e6d9ff;
 }
 
 .trash-zone {

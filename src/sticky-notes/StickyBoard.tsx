@@ -4,7 +4,15 @@ import { TRASH_ZONE_MARGIN, TRASH_ZONE_SIZE } from './constants';
 import { loadNotes, saveNotes } from './persistence';
 import { StickyNote } from './StickyNote';
 import { TrashZone } from './TrashZone';
-import type { BoardState, NoteId, Point, Rect, Size, StickyNote as NoteRecord } from './types';
+import type {
+  BoardState,
+  NoteColor,
+  NoteId,
+  Point,
+  Rect,
+  Size,
+  StickyNote as NoteRecord,
+} from './types';
 import './StickyBoard.css';
 
 function createInitialState(): BoardState {
@@ -142,6 +150,10 @@ export function StickyBoard() {
     });
   }, []);
 
+  const handleColorChange = useCallback((noteId: NoteId, color: NoteColor) => {
+    dispatch({ type: 'colorChanged', noteId, color });
+  }, []);
+
   useEffect(() => {
     if (!state.interaction) return;
 
@@ -185,10 +197,12 @@ export function StickyBoard() {
             key={note.id}
             id={note.id}
             rect={rect}
+            color={note.color}
             isActive={isActive}
             isDeleteCandidate={isDeleteCandidate}
             onMoveStart={handleNoteMoveStart}
             onResizeStart={handleResizeStart}
+            onColorChange={handleColorChange}
           />
         );
       })}
