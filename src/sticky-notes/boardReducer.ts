@@ -246,6 +246,25 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
       };
     }
 
+    case 'boardResized': {
+      let anyNoteMoved = false;
+      const notes = state.notes.map((note) => {
+        const fitted = fitRectToBoard(note.rect, action.boardSize);
+        if (
+          fitted.x === note.rect.x &&
+          fitted.y === note.rect.y &&
+          fitted.width === note.rect.width &&
+          fitted.height === note.rect.height
+        ) {
+          return note;
+        }
+        anyNoteMoved = true;
+        return { ...note, rect: fitted };
+      });
+
+      return anyNoteMoved ? { ...state, notes } : state;
+    }
+
     default:
       return assertNever(action);
   }

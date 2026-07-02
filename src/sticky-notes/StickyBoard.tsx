@@ -198,6 +198,20 @@ export function StickyBoard() {
     saveNotes(state.notes);
   }, [state.notes]);
 
+  // Shrinking the window could otherwise strand a committed note outside the
+  // clipped board with no way to reach it again.
+  useEffect(() => {
+    function handleWindowResize() {
+      const board = boardRef.current;
+      if (!board) return;
+      const bounds = board.getBoundingClientRect();
+      dispatch({ type: 'boardResized', boardSize: { width: bounds.width, height: bounds.height } });
+    }
+
+    window.addEventListener('resize', handleWindowResize);
+    return () => window.removeEventListener('resize', handleWindowResize);
+  }, []);
+
   const trashActive = state.interaction?.kind === 'moving' && state.interaction.deleteCandidate;
 
   return (
@@ -208,6 +222,7 @@ export function StickyBoard() {
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
+      onLostPointerCapture={handlePointerCancel}
     >
       <p className="sticky-board__instructions">
         Drag empty space to create a note. Drag a note to move it, or its bottom-right handle to

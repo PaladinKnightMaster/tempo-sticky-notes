@@ -91,4 +91,8 @@ export type BoardAction =
       readonly type: 'colorChanged';
       readonly noteId: NoteId;
       readonly color: NoteColor;
+    }
+  | {
+      readonly type: 'boardResized';
+      readonly boardSize: Size;
     };

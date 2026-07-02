@@ -485,3 +485,39 @@ describe('boardReducer - color', () => {
     expect(updated).toBe(state);
   });
 });
+
+describe('boardReducer - board resize', () => {
+  it('pulls notes stranded outside a shrunken board back inside', () => {
+    const state: BoardState = {
+      notes: [
+        { id: 'inside', rect: { x: 100, y: 100, width: 120, height: 80 }, color: 'yellow' },
+        { id: 'stranded', rect: { x: 1600, y: 900, width: 120, height: 80 }, color: 'blue' },
+      ],
+      interaction: null,
+    };
+
+    const resized = boardReducer(state, {
+      type: 'boardResized',
+      boardSize: { width: 1024, height: 768 },
+    });
+
+    expect(resized.notes).toEqual([
+      { id: 'inside', rect: { x: 100, y: 100, width: 120, height: 80 }, color: 'yellow' },
+      { id: 'stranded', rect: { x: 904, y: 688, width: 120, height: 80 }, color: 'blue' },
+    ]);
+  });
+
+  it('returns the same state when no note needs to move', () => {
+    const state: BoardState = {
+      notes: [{ id: 'inside', rect: { x: 100, y: 100, width: 120, height: 80 }, color: 'yellow' }],
+      interaction: null,
+    };
+
+    const resized = boardReducer(state, {
+      type: 'boardResized',
+      boardSize: { width: 1024, height: 768 },
+    });
+
+    expect(resized).toBe(state);
+  });
+});
